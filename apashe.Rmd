@@ -1,0 +1,103 @@
+---
+title: "BRH taux de change"
+author: "Joël Mugambi Nicolas, Ralf Oly Bertilus,Janvier Gerald Euclide,Leger Michelson"
+date: "2023-05-13"
+output: flexdashboard::flex_dashboard 
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(XML)
+library(xml2)
+library(rvest)
+library(htmlTable)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r global, include=FALSE}
+                 ###Import Data###
+# Taux du jr
+A<-read_html("https://www.brh.ht/taux-du-jour/")
+tauxdujours<-A%>%html_table(fill=TRUE)
+tauxdujours1=as.data.frame(tauxdujours)
+
+# Taux des Banques
+B<-read_html("https://www.brh.ht/taux-affiches-par-les-banques-et-les-agents-de-change-2/")
+TAPBAC<-B%>%html_table(fill=TRUE)
+TAPBAC1=as.data.frame(TAPBAC)
+
+
+
+                  ### Select Variables of interest ###
+tauxdujours2<-tauxdujours1[c(2,4,7),]
+TAPBAC2<-TAPBAC1[c(2:8),]
+
+tauxdujours3<-tauxdujours2[,-4]
+TAPBAC3<-TAPBAC2[,-4]
+
+                         ### Rename ###
+names(tauxdujours3)<-c("TAUXMOYEN","ACHATS","VENTES")
+names(TAPBAC3)<-c("BANQUES","ACHATS","VENTES")
+
+                        ### Conversion ###
+tauxdujours3$ACHATS<-as.numeric(as.character(tauxdujours3$ACHATS))
+tauxdujours3$VENTES<-as.numeric(as.character(tauxdujours3$VENTES))
+tauxdujours3
+
+TAPBAC3$ACHATS<-as.numeric(as.character(TAPBAC3$ACHATS))
+TAPBAC3$VENTES<-as.numeric(as.character(TAPBAC3$VENTES))
+TAPBAC3
+
+# NA=0
+TAPBAC3[is.na(TAPBAC3)] <-0
+
+```
+Taux du jour par banque
+==============================================================================
+
+### taux a l'achat
+
+```{r echo=FALSE}
+library(plotly)
+
+# Charger les données
+
+
+Banques<-c("UNIBANK","SOGEBANK","BUH","	
+CITIBANK","SOGEBEL","	
+CAPITAL BANK","BNC")
+ACHATS<-TAPBAC3[,2]
+VENTES<-TAPBAC3[,3]
+
+# Créer un diagramme en barres groupées
+colors<-c("red","green","blue","orange","purple","grey","black")
+plot_ly(TAPBAC3, x = ~Banques,y = ~ACHATS, type = "bar",color=colors)
+
+
+```
+
+### Taux a la vente
+
+```{r echo=FALSE}
+colors<-c("red","green","blue","orange","purple","grey","black")
+plot_ly(TAPBAC3, x = ~Banques, y = ~VENTES, type = "bar",color=colors)
+
+```
+Taux moyen sur le marche
+================================================================================
+
+```{r echo=FALSE}
+library(plotly)
+
+ #Graphe du Taux des différents marchés à l'achat
+
+fcb<-plot_ly(tauxdujours3, x= ~TAUXMOYEN , y= ~ACHATS, type="bar", name="Achats")
+fcb<-fcb%>%add_trace(y= ~VENTES, name="Ventes")
+fcb<-fcb%>%layout(yaxis=list(title="valeurs"),barmode="group")
+fcb
+
+             
+```

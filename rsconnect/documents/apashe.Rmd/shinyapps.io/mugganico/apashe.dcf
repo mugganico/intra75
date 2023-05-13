@@ -1,0 +1,13 @@
+name: apashe
+title: apashe
+username:
+account: mugganico
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9099760
+bundleId: 7212351
+url: https://mugganico.shinyapps.io/apashe/
+when: 1683942049.86653
+lastSyncTime: 1683942049.86655
+asMultiple: FALSE
+asStatic: FALSE
